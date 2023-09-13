@@ -3,7 +3,11 @@ package routes
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"log"
 	database "main/DataBase"
+	"os"
+	"path"
 	"strconv"
 	"time"
 
@@ -47,41 +51,61 @@ func GetHotels(c *gin.Context) {
 
 func AddHotel(c *gin.Context) {
 
+	// get the params from url
 	name := c.Query("name")
 	rate, _ := strconv.ParseFloat(c.Query("rate")[0:3], 64)
 	price, err := strconv.Atoi(c.Query("price"))
 	location := c.Query("location")
-	images, err := c.FormFile("images")
-	comments := c.Query("comments")
+
+	// get the comments array
+	comments := c.Request.URL.Query()["comments"]
 
 	fmt.Println(err)
 
-	// should use query
-	response := c.Request.URL.Query()
+	fmt.Println(comments)
+	// get the images
+	form, _ := c.MultipartForm()
+	files := form.File["images"]
 
-	for key, value := range response {
-		fmt.Printf("Key: %s, Value: %d\n", key, value)
+	// get the directory
+	dist, err := os.Getwd()
+
+	// save each image in ./images dir
+	for _, file := range files {
+		c.SaveUploadedFile(file, path.Join(dist, "images", file.Filename))
 	}
-	// fmt.Println(images)
-
-	// for i := 0; i < len(images); i++ {
-	// 	c.SaveUploadedFile(images[i], "temp%d.jpg")
-	// }
-
-	// imageByte, err := ioutil.ReadFile("temp.jpg")
 
 	dbCtx, dbCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer dbCancel() // Make sure to cancel the context when the handler exits
 
+	// files in ./images dir
+	filesList, err := os.ReadDir(path.Join(dist, "images"))
+
+	// 2nd array to store array of image bytes
+	var imageByte [][]byte
+
+	// loop into each image and read it bytes
+	for _, file := range filesList {
+		Bytes, err := ioutil.ReadFile(path.Join(dist, "images", file.Name()))
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		imageByte = append(imageByte, Bytes)
+	}
+
+	// schema or the info i need to save it in database
 	filter := bson.D{
 		{"name", name},
 		{"rate", rate},
 		{"price", price},
 		{"location", location},
-		{"images", images},
+		{"images", imageByte},
 		{"comments", comments},
 	}
 
+	// insert data
 	res := database.InsertOne(dbCtx, collection, filter)
 
 	c.String(200, "Done Uploading %v", res)

@@ -10,6 +10,8 @@ func main() {
 
 	route := gin.Default()
 
+	route.MaxMultipartMemory = 80 << 20
+
 	// return all the hotels
 	route.GET("/", routes.GetHotels)
 
@@ -19,5 +21,5 @@ func main() {
 	// add new hotel
 	route.POST("/post", routes.AddHotel)
 
-	route.Run("localhost:3000")
+	route.Run("localhost:3001")
 }
