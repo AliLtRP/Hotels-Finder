@@ -21,5 +21,10 @@ func main() {
 	// add new hotel
 	route.POST("/post", routes.AddHotel)
 
+	//check if the user if auth or not
+	route.GET("/user/auth", routes.Auth)
+
+	route.POST("/user/auth/newuser", routes.AddNewUser)
+
 	route.Run("localhost:3001")
 }

@@ -19,6 +19,11 @@ type Schema struct {
 	Comments []string `bson: "comments"`
 }
 
+type User struct {
+	User     string `bson: "user"`
+	password string `bson: "password"`
+}
+
 func Connection() (*mongo.Client, context.Context) {
 
 	// mad
@@ -36,8 +41,8 @@ func Connection() (*mongo.Client, context.Context) {
 	return client, ctx
 }
 
-func Collection(client *mongo.Client, ctx context.Context) *mongo.Collection {
-	collection := client.Database("GOLang-Hotels").Collection("Hotel")
+func Collection(client *mongo.Client, ctx context.Context, collectionName string) *mongo.Collection {
+	collection := client.Database("GOLang-Hotels").Collection(collectionName)
 	return collection
 }
 
