@@ -41,5 +41,5 @@ func main() {
 		return
 	})
 
-	route.Run("localhost:3001")
+	route.Run()
 }
