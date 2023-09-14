@@ -88,13 +88,17 @@ func AddHotel(c *gin.Context) {
 
 	// loop into each image and read it bytes
 	for _, file := range filesList {
-		Bytes, err := ioutil.ReadFile(path.Join(dist, "images", file.Name()))
+		imgLocaation := path.Join(dist, "images", file.Name())
+		Bytes, err := ioutil.ReadFile(imgLocaation)
 
 		if err != nil {
 			log.Println(err)
 		}
 
 		imageByte = append(imageByte, Bytes)
+
+		// delete images after read them
+		os.Remove(imgLocaation)
 	}
 
 	// schema or the info i need to save it in database
